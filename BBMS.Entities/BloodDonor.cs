@@ -4,7 +4,14 @@ namespace BBMS.Entities
 {
     public class BloodDonor : Person
     {
-        public DateTime DateOfBirth { get; set; }
+        private DateTime _dateOfBirth;
+
+        public DateTime DateOfBirth
+        {
+            get => _dateOfBirth;
+            set { _dateOfBirth = value.Date; }
+        }
+
         public RhFactor RhFactor { get; set; }
         public BloodGroup BloodGroup { get; set; }
         /// <summary>
@@ -13,5 +20,6 @@ namespace BBMS.Entities
         /// Business logic will determine.
         /// </summary>
         public string RelevantHistory { get; set; }
+        public bool BasicHealthCheckDone { get; set; }
     }
 }

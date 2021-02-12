@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router';
 import { ApplicationState } from '../';
 import * as BloodTransactionsStore from './listStore';
+import { Table, Pagination, PaginationItem, PaginationLink } from 'reactstrap';
 
 // At runtime, Redux will merge together...
 type BloodTransactionProps =
@@ -23,14 +24,13 @@ class FetchBloodTransactionData extends React.PureComponent<BloodTransactionProp
                 <h1 id="btTable">Blood Transactions</h1>
                 <p>This component demonstrates fetching data from the server and working with URL parameters.</p>
                 {this.renderForecastsTable()}
-                {this.renderPagination()}
             </React.Fragment>
         );
     }
 
     private renderForecastsTable() {
         return (
-            <table className='table table-striped' aria-labelledby="tabelLabel">
+            <Table striped>
                 <thead>
                     <tr>
                         <th>Date</th>
@@ -53,7 +53,10 @@ class FetchBloodTransactionData extends React.PureComponent<BloodTransactionProp
                         </tr>
                     )}
                 </tbody>
-            </table>
+                <tfoot>
+                    {this.renderPagination()}
+                </tfoot>
+            </Table>
         );
     }
 
@@ -61,8 +64,6 @@ class FetchBloodTransactionData extends React.PureComponent<BloodTransactionProp
         const obj = this.props.pagedResult;
         const prevPage = (obj.currentPage || 1) - 1;
         const nextPage = (obj.currentPage || 1) + 1;
-        const disablePrev = prevPage < 1;
-        const disableNext = nextPage > obj.pageCount;
         let navText;
         if (this.props.isLoading) {
             navText = <span>Loading...</span>;
@@ -70,12 +71,33 @@ class FetchBloodTransactionData extends React.PureComponent<BloodTransactionProp
             navText = <span>Page {obj.currentPage} of {obj.pageCount || 1}</span>;
         }
         return (
-            <div className="d-flex justify-content-between">
-                <button className={`btn btn-outline-secondary btn-sm ${disablePrev ? "disable-link" : ""}`} onClick={this.props.goToPrevPage} disabled={disablePrev}>Previous</button>
-                {navText}
-                <button className={`btn btn-outline-secondary btn-sm ${disableNext ? "disable-link" : ""}`} onClick={this.props.goToNextPage} disabled={disableNext}>Next</button>
+            <div>
+                <Pagination>
+                    <PaginationItem disabled={obj.currentPage < 2}>
+                        <PaginationLink first  onClick={this.props.goToFirstPage}  />
+                    </PaginationItem>
+                    <PaginationItem disabled={prevPage < 1}>
+                        <PaginationLink previous onClick={this.props.goToPrevPage} />
+                    </PaginationItem>
+                    <PaginationItem disabled>
+                        <PaginationLink>{navText}</PaginationLink>
+                    </PaginationItem>
+                    <PaginationItem disabled={nextPage > obj.pageCount}>
+                        <PaginationLink next onClick={this.props.goToNextPage} />
+                    </PaginationItem>
+                    <PaginationItem disabled={obj.currentPage >= obj.pageCount}>
+                        <PaginationLink last onClick={this.props.goToLastPage}  />
+                    </PaginationItem>
+                </Pagination>
             </div>
         );
+        // return (
+        //     <div className="d-flex justify-content-between">
+        //         <button className={`btn btn-outline-secondary btn-sm ${disablePrev ? "disable-link" : ""}`} onClick={this.props.goToPrevPage} disabled={disablePrev}>Previous</button>
+        //         {navText}
+        //         <button className={`btn btn-outline-secondary btn-sm ${disableNext ? "disable-link" : ""}`} onClick={this.props.goToNextPage} disabled={disableNext}>Next</button>
+        //     </div>
+        // );
     }
 }
 

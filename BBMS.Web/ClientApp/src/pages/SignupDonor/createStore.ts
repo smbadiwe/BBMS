@@ -9,11 +9,12 @@ export interface User {
     phone: string;
     age: number;
     email: string;
-    state: string;
-    country: string;
     address: string;
-    address1: string;
     address2: string;
+    city: string;
+    state: string;
+    zipCode: string;
+    country: string;
     subscribenewsletter: boolean;
 }
 
@@ -39,11 +40,12 @@ const initialState: SignupDonorState = {
         phone: '',
         age: 28,
         email: '',
+        address: '',
+        address2: '',
+        city: '',
+        zipCode: '',
         state: '',
         country: '',
-        address: 'Home',
-        address1: '',
-        address2: '',
         // interests: [],
         subscribenewsletter: false
     },
@@ -55,7 +57,7 @@ const initialState: SignupDonorState = {
     },
     validForm: false,
     submitted: false,
-    done: false
+    done: false,
 }
 
 enum SdTypes {
@@ -72,7 +74,7 @@ enum SdTypes {
 // They do not themselves have any side-effects; they just describe something that is going to happen.
 // Use @typeName and isActionType for type detection that works even after serialization/deserialization.
 
-export interface OnErrorFromServerAction { 
+export interface OnErrorFromServerAction {
     type: typeof SdTypes.ON_ERROR_FROM_SERVER;
     status: number;
     statusText: string;
@@ -89,8 +91,8 @@ export interface OnInputChangeAction {
 
 // Declare a 'discriminated union' type. This guarantees that all references to 'type' properties contain one of the
 // declared type strings (and not any other arbitrary string).
-export type KnownAction = InitializeAction | DonorCreatedAction | OnInputChangeAction | 
-BtnSubmitAction | ValidateFormAction | OnErrorFromServerAction;
+export type KnownAction = InitializeAction | DonorCreatedAction | OnInputChangeAction |
+    BtnSubmitAction | ValidateFormAction | OnErrorFromServerAction;
 
 // ----------------
 // ACTION CREATORS - These are functions exposed to UI components that will trigger a state transition.
@@ -103,27 +105,34 @@ const create = (dispatch: (action: KnownAction) => void, state: ApplicationState
                 if (response.ok) {
                     dispatch({ type: SdTypes.DONOR_CREATED });
                 } else {
+                    console.log("Prepare to dispatch server error");
                     response.json()
-                    .then(issue => {
-                        dispatch({ 
-                            type: SdTypes.ON_ERROR_FROM_SERVER, 
-                            statusText: response.statusText, 
-                            status: response.status, 
-                            body: issue.message 
-                        });
-                    })
-                    .catch(e => {
-                        dispatch({ 
-                            type: SdTypes.ON_ERROR_FROM_SERVER, 
-                            statusText: response.statusText, 
-                            status: response.status, 
-                            body: "" + e 
-                        });
-                    })
+                        .then(issue => {
+                            dispatch({
+                                type: SdTypes.ON_ERROR_FROM_SERVER,
+                                statusText: response.statusText,
+                                status: response.status,
+                                body: issue.message
+                            });
+                        })
+                        .catch(e => {
+                            dispatch({
+                                type: SdTypes.ON_ERROR_FROM_SERVER,
+                                statusText: response.statusText,
+                                status: response.status,
+                                body: "" + e
+                            });
+                        })
                 }
             })
             .catch(error => {
                 console.log("Error caught:\n", error);
+                dispatch({
+                    type: SdTypes.ON_ERROR_FROM_SERVER,
+                    statusText: '',
+                    status: 500,
+                    body: error
+                });
             });
     }
 }
@@ -132,11 +141,12 @@ export const actionCreators = {
     initializeState: (): AppThunkAction<KnownAction> => (dispatch, getState) => {
         dispatch({ type: SdTypes.INITIALIZE });
     },
-    onSubmit: (): AppThunkAction<KnownAction> => (dispatch, getState) => {
-        dispatch({ type: SdTypes.VALIDATE_FORM }); 
+    onSubmit: (e: any): AppThunkAction<KnownAction> => (dispatch, getState) => {
+        e.preventDefault();
+        dispatch({ type: SdTypes.VALIDATE_FORM });
         create(dispatch, getState());
     },
-    onInputChange: (event: React.ChangeEvent<HTMLInputElement>): AppThunkAction<KnownAction> => (dispatch, getState)  => {
+    onInputChange: (event: React.ChangeEvent<HTMLInputElement>): AppThunkAction<KnownAction> => (dispatch, getState) => {
         dispatch({ type: SdTypes.ON_INPUT_CHANGE, event: event })
     }
 };
@@ -145,7 +155,6 @@ export const actionCreators = {
 // REDUCER - For a given state and action, returns the new state. To support time travel, this must not mutate the old state.
 
 function validationErrorMessage(state: SignupDonorState, name: string, value: string): void {
-    
     switch (name) {
         case 'firstName':
             state.errors.firstName = value.length < 1 ? 'Enter First Name' : '';
@@ -160,6 +169,7 @@ function validationErrorMessage(state: SignupDonorState, name: string, value: st
 }
 
 function validateForm(newState: SignupDonorState): void {
+    newState.errors.fromServer = "";
     for (let e in newState.errors) {
         // The properties in `errors` should match those in `user`
         if (e in newState.user) {
@@ -188,7 +198,7 @@ export const reducer: Reducer<SignupDonorState> = (state: SignupDonorState | und
             return initialState;
         case SdTypes.ON_INPUT_CHANGE:
             let { name, value } = action.event.target;
-            let newState = { ...state };
+            let newState = { ...state, submitted: false, retrySubmit: false };
             newState.user = { ...newState.user, [name]: value };
             validationErrorMessage(newState, name, value);
             return newState;

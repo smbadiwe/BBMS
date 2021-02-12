@@ -1,5 +1,5 @@
 import { Action, Reducer } from 'redux';
-import { AppThunkAction, PagedResult } from '../';
+import { ApplicationState, AppThunkAction, PagedResult } from '../';
 
 // -----------------
 // STATE - This defines the type of data maintained in the Redux store.
@@ -70,12 +70,28 @@ const requestBloodTransactions = (dispatch: (action: KnownAction) => void, page:
         });
 }
 
+const getPagedResult = (appState: ApplicationState): PagedResult<BloodTransaction> | null  => {
+    if (appState && appState.bloodTransactions && appState.bloodTransactions.pagedResult) {
+        return appState.bloodTransactions.pagedResult;
+    }
+    return null;
+}
 export const actionCreators = {
+    goToFirstPage: (): AppThunkAction<KnownAction> => (dispatch, getState) => {
+        const pr = getPagedResult(getState());
+        if (pr) {
+            requestBloodTransactions(dispatch, 1, pr.pageSize);
+        }
+    },
+    goToLastPage: (): AppThunkAction<KnownAction> => (dispatch, getState) => {
+        const pr = getPagedResult(getState());
+        if (pr) {
+            requestBloodTransactions(dispatch,  pr.pageCount, pr.pageSize);
+        }
+    },
     goToPrevPage: (): AppThunkAction<KnownAction> => (dispatch, getState) => {
-        const appState = getState();
-        if (appState && appState.bloodTransactions && appState.bloodTransactions.pagedResult) {
-            const pr = appState.bloodTransactions.pagedResult;
-
+        const pr = getPagedResult(getState());
+        if (pr) {
             const prevPage = (pr.currentPage || 1) - 1;
             if (prevPage > 0) {
                 requestBloodTransactions(dispatch, prevPage, pr.pageSize);
@@ -83,10 +99,8 @@ export const actionCreators = {
         }
     },
     goToNextPage: (): AppThunkAction<KnownAction> => (dispatch, getState) => {
-        const appState = getState();
-        if (appState && appState.bloodTransactions && appState.bloodTransactions.pagedResult) {
-            const pr = appState.bloodTransactions.pagedResult;
-
+        const pr = getPagedResult(getState());
+        if (pr) {
             const nextPage = (pr.currentPage || 1) + 1;
             if (nextPage <= pr.pageCount) {
                 requestBloodTransactions(dispatch, nextPage, pr.pageSize);
@@ -94,7 +108,6 @@ export const actionCreators = {
         }
     },
     loadData: (): AppThunkAction<KnownAction> => (dispatch, getState) => {
-        console.log("Running loadData()");
         const appState = getState();
         if (appState && appState.bloodTransactions && appState.bloodTransactions.pagedResult) {
             const pr = appState.bloodTransactions.pagedResult;
