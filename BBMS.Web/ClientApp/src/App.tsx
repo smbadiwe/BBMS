@@ -3,10 +3,9 @@ import { Route } from 'react-router';
 import Layout from './components/Layout';
 import Home from './components/Home';
 import Counter from './components/Counter';
-// import FetchData from './components/FetchData';
+import ScheduleAppt from './pages/ScheduleAppt/create';
 import BloodTransaction from './pages/BloodTransaction/list';
 import SignupDonor from './pages/SignupDonor/create';
-
 // import './pages/custom.css'
 
 export default () => (
@@ -16,6 +15,6 @@ export default () => (
         <Route path='/blooddonor/signup' component={SignupDonor} />
         {/* <Route path='/blooddonor/signupsuccess' render={(props) => <SignupDonorSuccess {...props} />} /> */}
         <Route path='/counter' component={Counter} />
-        {/* <Route path='/fetch-data/:startDateIndex?' component={FetchData} /> */}
+        <Route path='/scheduleappt' component={ScheduleAppt} />
     </Layout>
 );

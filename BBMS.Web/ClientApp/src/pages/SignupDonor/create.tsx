@@ -89,7 +89,7 @@ class SignupDonor extends React.PureComponent<SignupDonorProps> {
             </Form>
         )
     }
-};
+}
 
 const ServerError = (props: SignupDonorStore.Error) => {
     if (props.fromServer) {

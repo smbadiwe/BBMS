@@ -2,11 +2,13 @@ import * as WeatherForecasts from './WeatherForecasts';
 import * as Counter from './Counter';
 import * as BloodTransactions from '../pages/BloodTransaction/listStore';
 import * as SignupDonor from '../pages/SignupDonor/createStore';
+import * as ScheduleAppt from '../pages/ScheduleAppt/createStore';
 
 // The top-level state object
 export interface ApplicationState {
     counter: Counter.CounterState | undefined;
     signupDonor: SignupDonor.SignupDonorState | undefined;
+    scheduleAppt: ScheduleAppt.ScheduleApptState | undefined;
     weatherForecasts: WeatherForecasts.WeatherForecastsState | undefined;
     bloodTransactions: BloodTransactions.BloodTransactionsState | undefined;
 }
@@ -18,6 +20,7 @@ export const reducers = {
     counter: Counter.reducer,
     weatherForecasts: WeatherForecasts.reducer,
     signupDonor: SignupDonor.reducer,
+    scheduleAppt: ScheduleAppt.reducer,
     bloodTransactions: BloodTransactions.reducer
 };
 

@@ -100,30 +100,9 @@ export type KnownAction = InitializeAction | DonorCreatedAction | OnInputChangeA
 
 const create = (dispatch: (action: KnownAction) => void, state: ApplicationState) => {
     if (state && state.signupDonor && state.signupDonor.validForm) {
-        fetch(Utils.httpPost("api/blooddonor/signup", state.signupDonor.user))
+        Utils.httpPost("api/blooddonor/signup", state.signupDonor.user)
             .then(response => {
-                if (response.ok) {
-                    dispatch({ type: SdTypes.DONOR_CREATED });
-                } else {
-                    console.log("Prepare to dispatch server error");
-                    response.json()
-                        .then(issue => {
-                            dispatch({
-                                type: SdTypes.ON_ERROR_FROM_SERVER,
-                                statusText: response.statusText,
-                                status: response.status,
-                                body: issue.message
-                            });
-                        })
-                        .catch(e => {
-                            dispatch({
-                                type: SdTypes.ON_ERROR_FROM_SERVER,
-                                statusText: response.statusText,
-                                status: response.status,
-                                body: "" + e
-                            });
-                        })
-                }
+                dispatch({ type: SdTypes.DONOR_CREATED });
             })
             .catch(error => {
                 console.log("Error caught:\n", error);
